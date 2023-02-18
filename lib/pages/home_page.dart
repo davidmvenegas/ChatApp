@@ -49,13 +49,15 @@ class _HomePageState extends State<HomePage> {
       drawer: Drawer(
         child: ListView(
           children: <Widget>[
-            const Icon(Icons.account_circle, size: 140, color: Colors.grey),
-            const SizedBox(height: 12),
+            const Icon(Icons.account_circle, size: 140, color: Colors.black54),
+            const SizedBox(height: 10),
             Text(username,
                 textAlign: TextAlign.center,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87)),
+            const SizedBox(height: 20),
             const Divider(
               height: 10,
               thickness: 1,
@@ -64,16 +66,15 @@ class _HomePageState extends State<HomePage> {
             ),
             ListTile(
               onTap: () {},
-              selected: true,
-              selectedColor: Colors.blue,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.group, size: 28),
-              title: const Text('Groups',
+              leading:
+                  const Icon(Icons.home_rounded, size: 28, color: Colors.blue),
+              title: const Text('Home',
                   style: TextStyle(
-                      fontSize: 17,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black)),
+                      color: Colors.blue)),
             ),
             ListTile(
               onTap: () {
@@ -82,12 +83,13 @@ class _HomePageState extends State<HomePage> {
               },
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.person, size: 28),
+              leading:
+                  const Icon(Icons.person, size: 28, color: Colors.black54),
               title: const Text('Profile',
                   style: TextStyle(
-                      fontSize: 17,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black)),
+                      color: Colors.black54)),
             ),
             ListTile(
               onTap: () {
@@ -124,16 +126,47 @@ class _HomePageState extends State<HomePage> {
               },
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.logout, size: 28),
+              leading:
+                  const Icon(Icons.logout, size: 28, color: Colors.black54),
               title: const Text('Logout',
                   style: TextStyle(
-                      fontSize: 17,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black)),
+                      color: Colors.black54)),
             ),
           ],
         ),
       ),
+      body: groupList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          popUpDialog(context);
+        },
+        child: const Icon(Icons.add, size: 28, color: Colors.white),
+      ),
     );
+  }
+
+  popUpDialog(BuildContext context) {}
+
+  groupList() {
+    // return StreamBuilder(
+    //     stream: authService.getGroups(),
+    //     builder: (context, AsyncSnapshot<dynamic> snapshot) {
+    //       if (snapshot.hasData) {
+    //         return ListView.builder(
+    //             itemCount: snapshot.data.docs.length,
+    //             itemBuilder: (context, index) {
+    //               return groupTile(
+    //                   snapshot.data.docs[index].data()['groupName'],
+    //                   snapshot.data.docs[index].data()['groupDescription'],
+    //                   snapshot.data.docs[index].data()['groupIcon'],
+    //                   snapshot.data.docs[index].data()['groupAdmin'],
+    //                   snapshot.data.docs[index].data()['groupMembers']);
+    //             });
+    //       } else {
+    //         return const Center(child: CircularProgressIndicator());
+    //       }
+    //     });
   }
 }

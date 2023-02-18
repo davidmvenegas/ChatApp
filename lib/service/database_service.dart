@@ -9,17 +9,22 @@ class DatabaseService {
       FirebaseFirestore.instance.collection('groups');
 
   // GET USER
-  Future getUserData(String email) async {
+  Future getUser(String email) async {
     return await userCollection.where('email', isEqualTo: email).get();
   }
 
   // UPDATE USER
-  Future updateUserData(String username, String email) async {
+  Future updateUser(String username, String email) async {
     return await userCollection.doc(uid).set({
       'username': username,
       'email': email,
       'groups': [],
       'uid': uid,
     });
+  }
+
+  // GET GROUPS
+  Future getUserGroups() async {
+    return userCollection.doc(uid).snapshots();
   }
 }

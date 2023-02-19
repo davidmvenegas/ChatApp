@@ -40,7 +40,7 @@ void showSnackBar(context, color, message) {
       content: Text(message, style: const TextStyle(fontSize: 16)),
       duration: const Duration(milliseconds: 4000),
       action: SnackBarAction(
-        label: 'Close',
+        label: 'OK',
         textColor: Colors.white,
         onPressed: () {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();

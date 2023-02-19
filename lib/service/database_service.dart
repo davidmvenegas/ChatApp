@@ -24,7 +24,51 @@ class DatabaseService {
   }
 
   // GET GROUPS
-  Future getUserGroups() async {
+  Future getUsersGroups() async {
     return userCollection.doc(uid).snapshots();
+  }
+
+  // CREATE GROUP
+  // Future createGroup(String id, String name, String username) async {
+  //   DocumentReference groupDocumentReference = await groupCollection.add({
+  //     'id': '',
+  //     'name': name,
+  //     'admin': "${id}_$username",
+  //     'members': [],
+  //     'recentMessage': '',
+  //     'recentMessageTime': '',
+  //     'recentMessageSender': '',
+  //   });
+  //   await groupDocumentReference.update({
+  //     'id': groupDocumentReference.id,
+  //     'members': [
+  //       FieldValue.arrayUnion(["${uid}_$username"])
+  //     ]
+  //   });
+  //   await userCollection.doc(uid).update({
+  //     'groups': FieldValue.arrayUnion(["${groupDocumentReference.id}_$name"])
+  //   });
+  // }
+
+  Future createGroup(String id, String name, String username) async {
+    DocumentReference groupDocumentReference = await groupCollection.add({
+      'id': '',
+      'name': name,
+      'admin': "${id}_$username",
+      'members': [],
+      'recentMessage': '',
+      'recentMessageTime': '',
+      'recentMessageSender': '',
+    });
+
+    await groupDocumentReference.update({
+      "id": groupDocumentReference.id,
+      "members": FieldValue.arrayUnion(["${uid}_$username"]),
+    });
+
+    DocumentReference userDocumentReference = userCollection.doc(uid);
+    return await userDocumentReference.update({
+      "groups": FieldValue.arrayUnion(["${groupDocumentReference.id}_$name"])
+    });
   }
 }

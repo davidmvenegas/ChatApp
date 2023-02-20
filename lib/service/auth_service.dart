@@ -27,10 +27,10 @@ class AuthService {
     try {
       UserCredential userCredential = await firebaseAuth
           .signInWithEmailAndPassword(email: email, password: password);
-      QuerySnapshot snapshot =
+      QuerySnapshot userSnapshot =
           await DatabaseService(uid: userCredential.user?.uid).getUser(email);
       await HelperFunctions.saveUserLoggedInStatus(true);
-      await HelperFunctions.saveUserName(snapshot.docs[0]['username']);
+      await HelperFunctions.saveUserName(userSnapshot.docs[0]['username']);
       await HelperFunctions.saveUserEmail(email);
       return true;
     } catch (e) {

@@ -1,7 +1,9 @@
 import 'package:chat_app/pages/home_page.dart';
 import 'package:chat_app/pages/login_page.dart';
 import 'package:chat_app/service/auth_service.dart';
-import 'package:chat_app/widgets/widgets.dart';
+import 'package:chat_app/widgets/components.dart';
+import 'package:chat_app/widgets/alerts.dart';
+import 'package:chat_app/widgets/navigation.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:chat_app/pages/home_page.dart';
 import 'package:chat_app/pages/login_page.dart';
 import 'package:chat_app/service/auth_service.dart';
-import 'package:chat_app/widgets/widgets.dart';
+import 'package:chat_app/widgets/navigation.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -29,7 +29,7 @@ class ProfilePageState extends State<ProfilePage> {
             children: <Widget>[
               const Icon(Icons.account_circle,
                   size: 140, color: Colors.black54),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Text(widget.username,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
@@ -123,7 +123,7 @@ class ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 20),
               const Icon(Icons.account_circle,
                   size: 140, color: Colors.black54),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               const Divider(
                 height: 36,
                 thickness: .5,

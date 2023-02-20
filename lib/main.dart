@@ -28,7 +28,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-// CREATE APP STATE
+// CREATE STATE
 class _MyAppState extends State<MyApp> {
   bool isUserLoggedIn = false;
 

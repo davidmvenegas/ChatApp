@@ -26,9 +26,20 @@ class DatabaseService {
     });
   }
 
-  // ------------------ GROUP ------------------
+  // ------------------ GROUPS ------------------
+  Future getAllGroups() async {
+    return groupCollection.get();
+  }
+
   Future getGroup(String groupId) async {
-    return groupCollection.doc(groupId).snapshots();
+    return groupCollection.doc(groupId).get();
+  }
+
+  Future searchGroups(String keyword) async {
+    return groupCollection
+        .where('groupName', isGreaterThanOrEqualTo: keyword)
+        .where('groupName', isLessThanOrEqualTo: "$keyword\uf8ff")
+        .get();
   }
 
   Future getGroupAdmin(String groupId) async {
@@ -57,6 +68,30 @@ class DatabaseService {
     return await userDocumentReference.update({
       "groups":
           FieldValue.arrayUnion(["${groupDocumentReference.id}_$groupName"])
+    });
+  }
+
+  Future joinGroup(String groupId, String groupName, String userName) async {
+    DocumentReference userDocumentReference = userCollection.doc(uid);
+    DocumentReference groupDocumentReference = groupCollection.doc(groupId);
+
+    await userDocumentReference.update({
+      "members": FieldValue.arrayUnion(["${groupId}_$groupName"])
+    });
+    await groupDocumentReference.update({
+      "groups": FieldValue.arrayUnion(["${uid}_$userName"])
+    });
+  }
+
+  Future leaveGroup(String groupId, String groupName, String userName) async {
+    DocumentReference userDocumentReference = userCollection.doc(uid);
+    DocumentReference groupDocumentReference = groupCollection.doc(groupId);
+
+    await userDocumentReference.update({
+      "members": FieldValue.arrayRemove(["${groupId}_$groupName"])
+    });
+    await groupDocumentReference.update({
+      "groups": FieldValue.arrayRemove(["${uid}_$userName"])
     });
   }
 

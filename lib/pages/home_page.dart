@@ -26,10 +26,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    getUserData();
+    handleGetUserData();
   }
 
-  void getUserData() async {
+  void handleGetUserData() async {
     setState(() => isLoading = true);
     await HelperFunctions.getUserUsername()
         .then((res) => setState(() => username = res!));

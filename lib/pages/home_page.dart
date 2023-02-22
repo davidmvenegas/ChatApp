@@ -42,8 +42,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void alertNewGroupCreated(String groupName) {
-    showRichTextSnackBar(context, Colors.green, 'Group ', groupName,
-        ' was successfully created.');
+    showRichTextSnackBar(
+        context, Colors.green, '', groupName, ' successfully created');
   }
 
   void setLoading(bool val) {
@@ -178,7 +178,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             const Padding(
               padding: EdgeInsets.only(top: 15, bottom: 8, left: 20, right: 20),
-              child: Text('Groups',
+              child: Text('Messages',
                   style: TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.w700,
@@ -197,31 +197,33 @@ class _HomePageState extends State<HomePage> {
                     builder: (context, AsyncSnapshot snapshot) {
                       if (snapshot.hasData) {
                         if (snapshot.data['groups'].length == 0) {
-                          return Container(
+                          return Center(
+                            heightFactor: 2.75,
+                            child: Padding(
                               padding:
-                                  const EdgeInsets.symmetric(horizontal: 25),
+                                  const EdgeInsets.only(left: 25, right: 25),
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: const [
-                                  SizedBox(height: 100),
                                   Icon(Icons.group,
-                                      size: 87.5, color: Colors.black54),
+                                      size: 87.5, color: Colors.black45),
                                   SizedBox(height: 10),
                                   Text('You are not in any groups yet',
                                       style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.black54)),
+                                          color: Colors.black45)),
                                   SizedBox(height: 10),
                                   Text(
-                                      'Click on the + button to create a group or search for a group to join',
+                                      'Click on the + button to create a group or search for groups to join',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.black38)),
+                                          color: Colors.black26)),
                                 ],
-                              ));
+                              ),
+                            ),
+                          );
                         } else {
                           return ListView.builder(
                             shrinkWrap: true,

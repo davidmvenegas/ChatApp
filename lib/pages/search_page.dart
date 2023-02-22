@@ -22,11 +22,11 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    getCurrentUser();
+    getCurrentUsername();
     handleGetAllGroups();
   }
 
-  void getCurrentUser() async {
+  void getCurrentUsername() async {
     await HelperFunctions.getUserUsername()
         .then((value) => setState(() => currentUsername = value!));
   }
@@ -41,7 +41,7 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  void handleSearchGroups(String query) async {
+  void handleSearchGroups() async {
     if (searchController.text.isNotEmpty) {
       setState(() => isSearching = true);
       await DatabaseService()
@@ -55,6 +55,14 @@ class _SearchPageState extends State<SearchPage> {
     } else {
       handleGetAllGroups();
     }
+  }
+
+  void alertChangeGroupStatus(String groupName, bool isLeaving) {
+    handleSearchGroups();
+    isLeaving
+        ? showRichTextSnackBar(context, Colors.red, 'You left ', groupName, '')
+        : showRichTextSnackBar(
+            context, Colors.green, 'You joined ', groupName, '');
   }
 
   bool isGroupMember(List<dynamic> members) {
@@ -78,7 +86,7 @@ class _SearchPageState extends State<SearchPage> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+                    padding: const EdgeInsets.only(left: 12.0, right: 12.0),
                     child: TextField(
                       controller: searchController,
                       textAlignVertical: TextAlignVertical.center,
@@ -86,8 +94,7 @@ class _SearchPageState extends State<SearchPage> {
                       decoration: InputDecoration(
                         hintText: 'Search',
                         suffixIcon: GestureDetector(
-                            onTap: () =>
-                                handleSearchGroups(searchController.text),
+                            onTap: () => handleSearchGroups(),
                             child: const Icon(Icons.search, size: 26)),
                         contentPadding: const EdgeInsets.all(16.0),
                         border: const OutlineInputBorder(
@@ -126,15 +133,16 @@ class _SearchPageState extends State<SearchPage> {
                                   title: Text(currentGroup['groupName'],
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 17.5)),
+                                          fontSize: 18)),
                                   subtitle: RichText(
                                     text: TextSpan(
                                       children: [
                                         const TextSpan(
-                                            text: 'Admin: ',
+                                            text: 'ADMIN: ',
                                             style: TextStyle(
-                                              color: Colors.black54,
+                                              color: Colors.black45,
                                               fontSize: 14,
+                                              fontWeight: FontWeight.w600,
                                             )),
                                         TextSpan(
                                             text: searchResults!.docs[index]
@@ -147,35 +155,59 @@ class _SearchPageState extends State<SearchPage> {
                                       ],
                                     ),
                                   ),
-                                  trailing:
-                                      isGroupMember(currentGroup['members'])
-                                          ? ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red),
-                                              onPressed: () {
-                                                DatabaseService().leaveGroup(
+                                  trailing: isGroupMember(
+                                          currentGroup['members'])
+                                      ? ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red),
+                                          onPressed: () {
+                                            DatabaseService()
+                                                .leaveGroup(
                                                     currentGroup['groupId'],
                                                     currentGroup['groupName'],
-                                                    currentUsername);
-                                              },
-                                              child: const Text('Leave'),
-                                            )
-                                          : ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      Colors.green.shade500),
-                                              onPressed: () {
-                                                DatabaseService().joinGroup(
+                                                    currentUser!.uid,
+                                                    currentUsername)
+                                                .then((value) =>
+                                                    alertChangeGroupStatus(
+                                                        currentGroup[
+                                                            'groupName'],
+                                                        true))
+                                                .onError((error, _) =>
+                                                    showSnackBar(
+                                                        context,
+                                                        Colors.red,
+                                                        error
+                                                            .toString()
+                                                            .split('] ')[1]));
+                                          },
+                                          child: const Text('Leave'),
+                                        )
+                                      : ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  Colors.green.shade500),
+                                          onPressed: () {
+                                            DatabaseService()
+                                                .joinGroup(
                                                     currentGroup['groupId'],
                                                     currentGroup['groupName'],
-                                                    currentUsername);
-                                                showSnackBar(
-                                                    context,
-                                                    Colors.green,
-                                                    'Successfully joined ${currentGroup['groupName']}');
-                                              },
-                                              child: const Text('Join'),
-                                            ),
+                                                    currentUser!.uid,
+                                                    currentUsername)
+                                                .then((value) =>
+                                                    alertChangeGroupStatus(
+                                                        currentGroup[
+                                                            'groupName'],
+                                                        false))
+                                                .onError((error, _) =>
+                                                    showSnackBar(
+                                                        context,
+                                                        Colors.red,
+                                                        error
+                                                            .toString()
+                                                            .split('] ')[1]));
+                                          },
+                                          child: const Text('Join'),
+                                        ),
                                 );
                               },
                             )

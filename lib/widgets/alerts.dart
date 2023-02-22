@@ -6,7 +6,7 @@ void showSnackBar(context, color, message) {
     SnackBar(
       backgroundColor: color,
       content: Text(message, style: const TextStyle(fontSize: 16)),
-      duration: const Duration(milliseconds: 4000),
+      duration: const Duration(milliseconds: 2500),
       action: SnackBarAction(
         label: 'OK',
         textColor: Colors.white,
@@ -35,7 +35,7 @@ void showRichTextSnackBar(
           ],
         ),
       ),
-      duration: const Duration(milliseconds: 4000),
+      duration: const Duration(milliseconds: 2500),
       action: SnackBarAction(
         label: 'OK',
         textColor: Colors.white,

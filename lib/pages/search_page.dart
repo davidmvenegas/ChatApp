@@ -65,8 +65,23 @@ class _SearchPageState extends State<SearchPage> {
             context, Colors.green, 'You joined ', groupName, '');
   }
 
+  void handleDeleteGroup(String groupId, String groupName) {
+    Navigator.pop(context);
+    DatabaseService()
+        .deleteGroup(groupId)
+        .then((value) => showRichTextSnackBar(
+            context, Colors.red, 'You deleted ', groupName, ''))
+        .onError((error, _) =>
+            showSnackBar(context, Colors.red, error.toString().split('] ')[1]));
+    handleSearchGroups();
+  }
+
   bool isGroupMember(List<dynamic> members) {
     return members.contains('${currentUser!.uid}_$currentUsername');
+  }
+
+  bool isGroupAdmin(String groupAdmin) {
+    return groupAdmin == '${currentUser!.uid}_$currentUsername';
   }
 
   @override
@@ -120,94 +135,173 @@ class _SearchPageState extends State<SearchPage> {
                                     searchResults!.docs[index];
                                 return ListTile(
                                   leading: CircleAvatar(
-                                    radius: 25,
-                                    backgroundColor: Colors.blue.shade400,
+                                    radius: 27.5,
+                                    backgroundColor: Colors.blueGrey,
                                     child: Text(
                                         currentGroup['groupName'][0]
                                             .toUpperCase(),
                                         style: const TextStyle(
                                             color: Colors.white,
-                                            fontSize: 18.5,
+                                            fontSize: 20,
                                             fontWeight: FontWeight.w600)),
                                   ),
                                   title: Text(currentGroup['groupName'],
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 18)),
-                                  subtitle: RichText(
-                                    text: TextSpan(
-                                      children: [
-                                        const TextSpan(
-                                            text: 'ADMIN: ',
-                                            style: TextStyle(
-                                              color: Colors.black45,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            )),
-                                        TextSpan(
-                                            text: searchResults!.docs[index]
-                                                    ['groupAdmin']
-                                                .split('_')[1],
-                                            style: const TextStyle(
-                                              color: Colors.black54,
-                                              fontSize: 14,
-                                            )),
-                                      ],
-                                    ),
-                                  ),
-                                  trailing: isGroupMember(
-                                          currentGroup['members'])
-                                      ? ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red),
-                                          onPressed: () {
-                                            DatabaseService()
-                                                .leaveGroup(
-                                                    currentGroup['groupId'],
-                                                    currentGroup['groupName'],
-                                                    currentUser!.uid,
-                                                    currentUsername)
-                                                .then((value) =>
-                                                    alertChangeGroupStatus(
-                                                        currentGroup[
-                                                            'groupName'],
-                                                        true))
-                                                .onError((error, _) =>
-                                                    showSnackBar(
-                                                        context,
-                                                        Colors.red,
-                                                        error
-                                                            .toString()
-                                                            .split('] ')[1]));
-                                          },
-                                          child: const Text('Leave'),
-                                        )
-                                      : ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  Colors.green.shade500),
-                                          onPressed: () {
-                                            DatabaseService()
-                                                .joinGroup(
-                                                    currentGroup['groupId'],
-                                                    currentGroup['groupName'],
-                                                    currentUser!.uid,
-                                                    currentUsername)
-                                                .then((value) =>
-                                                    alertChangeGroupStatus(
-                                                        currentGroup[
-                                                            'groupName'],
-                                                        false))
-                                                .onError((error, _) =>
-                                                    showSnackBar(
-                                                        context,
-                                                        Colors.red,
-                                                        error
-                                                            .toString()
-                                                            .split('] ')[1]));
-                                          },
-                                          child: const Text('Join'),
+                                          fontSize: 20)),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 3.5),
+                                      RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            const TextSpan(
+                                                text: 'Created by ',
+                                                style: TextStyle(
+                                                  color: Colors.black45,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w500,
+                                                )),
+                                            TextSpan(
+                                                text: searchResults!.docs[index]
+                                                        ['groupAdmin']
+                                                    .split('_')[1],
+                                                style: const TextStyle(
+                                                  color: Colors.black45,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w700,
+                                                )),
+                                          ],
                                         ),
+                                      ),
+                                    ],
+                                  ),
+                                  trailing:
+                                      isGroupMember(currentGroup['members'])
+                                          ? isGroupAdmin(
+                                                  currentGroup['groupAdmin'])
+                                              ? ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors.red),
+                                                  onPressed: () {
+                                                    showDialog(
+                                                        context: context,
+                                                        builder:
+                                                            (context) =>
+                                                                AlertDialog(
+                                                                  title: const Text(
+                                                                      'Delete Group',
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              21,
+                                                                          fontWeight:
+                                                                              FontWeight.w600)),
+                                                                  content:
+                                                                      const Text(
+                                                                          'Are you sure you want to delete this group?'),
+                                                                  actions: [
+                                                                    TextButton(
+                                                                        onPressed: () =>
+                                                                            Navigator.pop(
+                                                                                context),
+                                                                        style: TextButton
+                                                                            .styleFrom(
+                                                                          backgroundColor:
+                                                                              Colors.red,
+                                                                          fixedSize: const Size(
+                                                                              76,
+                                                                              32),
+                                                                        ),
+                                                                        child: const Text(
+                                                                            'CANCEL',
+                                                                            style:
+                                                                                TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+                                                                    TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          handleDeleteGroup(
+                                                                              currentGroup['groupId'],
+                                                                              currentGroup['groupName']);
+                                                                        },
+                                                                        style: TextButton
+                                                                            .styleFrom(
+                                                                          fixedSize: const Size(
+                                                                              76,
+                                                                              32),
+                                                                          backgroundColor:
+                                                                              Colors.blue,
+                                                                        ),
+                                                                        child: const Text(
+                                                                            'OK',
+                                                                            style:
+                                                                                TextStyle(color: Colors.white, fontWeight: FontWeight.w700)))
+                                                                  ],
+                                                                ));
+                                                  },
+                                                  child: const Text('Delete'),
+                                                )
+                                              : ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors.blue),
+                                                  onPressed: () {
+                                                    DatabaseService()
+                                                        .leaveGroup(
+                                                            currentGroup[
+                                                                'groupId'],
+                                                            currentGroup[
+                                                                'groupName'],
+                                                            currentUser!.uid,
+                                                            currentUsername)
+                                                        .then((value) =>
+                                                            alertChangeGroupStatus(
+                                                                currentGroup[
+                                                                    'groupName'],
+                                                                true))
+                                                        .onError((error, _) =>
+                                                            showSnackBar(
+                                                                context,
+                                                                Colors.red,
+                                                                error
+                                                                    .toString()
+                                                                    .split(
+                                                                        '] ')[1]));
+                                                  },
+                                                  child: const Text('Leave'),
+                                                )
+                                          : ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.green.shade500),
+                                              onPressed: () {
+                                                DatabaseService()
+                                                    .joinGroup(
+                                                        currentGroup['groupId'],
+                                                        currentGroup[
+                                                            'groupName'],
+                                                        currentUser!.uid,
+                                                        currentUsername)
+                                                    .then((value) =>
+                                                        alertChangeGroupStatus(
+                                                            currentGroup[
+                                                                'groupName'],
+                                                            false))
+                                                    .onError((error, _) =>
+                                                        showSnackBar(
+                                                            context,
+                                                            Colors.red,
+                                                            error
+                                                                .toString()
+                                                                .split(
+                                                                    '] ')[1]));
+                                              },
+                                              child: const Text('Join'),
+                                            ),
                                 );
                               },
                             )

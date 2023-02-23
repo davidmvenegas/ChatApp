@@ -1,14 +1,16 @@
 import 'package:chat_app/helper/helper_function.dart';
+import 'package:chat_app/pages/chat_page.dart';
 import 'package:chat_app/pages/login_page.dart';
 import 'package:chat_app/pages/profile_page.dart';
 import 'package:chat_app/pages/search_page.dart';
 import 'package:chat_app/service/auth_service.dart';
 import 'package:chat_app/service/database_service.dart';
 import 'package:chat_app/widgets/alerts.dart';
-import 'package:chat_app/widgets/components.dart';
 import 'package:chat_app/widgets/navigation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,10 +19,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  User? currentUser = FirebaseAuth.instance.currentUser;
+  bool isLoading = false;
   String username = '';
   String email = '';
-  Stream? userData;
-  bool isLoading = false;
+  Stream<QuerySnapshot>? usersGroups;
   AuthService authService = AuthService();
 
   @override
@@ -36,8 +39,8 @@ class _HomePageState extends State<HomePage> {
     await HelperFunctions.getUserEmail()
         .then((res) => setState(() => email = res!));
     await DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid)
-        .getUserData()
-        .then((res) => setState(() => userData = res));
+        .getUsersGroups(currentUser!.uid, username)
+        .then((res) => setState(() => usersGroups = res));
     setState(() => isLoading = false);
   }
 
@@ -50,8 +53,16 @@ class _HomePageState extends State<HomePage> {
     setState(() => isLoading = val);
   }
 
-  String extractId(String res) => res.substring(0, res.indexOf('_'));
-  String extractName(String res) => res.substring(res.indexOf('_') + 1);
+  String formatDate(int timestamp) {
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    final DateFormat dayFormat = DateFormat('dd/MM/yy');
+    final DateFormat hourFormat = DateFormat('h:mm a');
+    if (dateTime.day > DateTime.now().day - 1) {
+      return hourFormat.format(dateTime);
+    } else {
+      return dayFormat.format(dateTime);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,8 +188,9 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(
-              padding: EdgeInsets.only(top: 15, bottom: 8, left: 20, right: 20),
-              child: Text('Messages',
+              padding:
+                  EdgeInsets.only(top: 15, bottom: 9.5, left: 20, right: 20),
+              child: Text('My Groups',
                   style: TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.w700,
@@ -192,11 +204,11 @@ class _HomePageState extends State<HomePage> {
                       color: Colors.blue,
                     ),
                   )
-                : StreamBuilder(
-                    stream: userData,
-                    builder: (context, AsyncSnapshot snapshot) {
+                : StreamBuilder<QuerySnapshot>(
+                    stream: usersGroups,
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.hasData) {
-                        if (snapshot.data['groups'].length == 0) {
+                        if (snapshot.data!.docs.isEmpty) {
                           return Center(
                             heightFactor: 2.75,
                             child: Padding(
@@ -228,16 +240,128 @@ class _HomePageState extends State<HomePage> {
                           return ListView.builder(
                             shrinkWrap: true,
                             physics: const ClampingScrollPhysics(),
-                            itemCount: snapshot.data['groups'].length,
+                            itemCount: snapshot.data!.docs.length,
                             itemBuilder: (context, index) {
-                              int reverseIndex =
-                                  snapshot.data['groups'].length - index - 1;
-                              return GroupTile(
-                                  groupId: extractId(
-                                      snapshot.data['groups'][reverseIndex]),
-                                  groupName: extractName(
-                                      snapshot.data['groups'][reverseIndex]),
-                                  username: username);
+                              var currentDoc = snapshot.data!.docs[index];
+                              String groupId = currentDoc['groupId'];
+                              String groupName = currentDoc['groupName'];
+                              String recentMessage =
+                                  currentDoc['recentMessage'];
+                              String recentMessageSender =
+                                  currentDoc['recentMessageSender'];
+                              int recentMessageTime =
+                                  currentDoc['recentMessageTime'] == ''
+                                      ? 0
+                                      : currentDoc['recentMessageTime'];
+                              return Column(
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.fromLTRB(
+                                        12.0, 8.0, 15.0, 8.0),
+                                    child: ListTile(
+                                      leading: CircleAvatar(
+                                          radius: 30.0,
+                                          backgroundColor: Colors.blueGrey[400],
+                                          child: Text(
+                                            groupName[0].toUpperCase(),
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 22.0,
+                                                fontWeight: FontWeight.bold),
+                                          )),
+                                      title: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Flexible(
+                                            child: Text(groupName,
+                                                style: const TextStyle(
+                                                    fontSize: 20.5,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Color.fromARGB(
+                                                        185, 0, 0, 0))),
+                                          ),
+                                          Row(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 6.5, top: 0.5),
+                                                child: Text(
+                                                    recentMessageTime == 0
+                                                        ? 'NEW'
+                                                        : formatDate(
+                                                            recentMessageTime),
+                                                    style: const TextStyle(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w300,
+                                                        color: Color.fromARGB(
+                                                            165, 0, 0, 0))),
+                                              ),
+                                              const Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  size: 16,
+                                                  color: Color.fromARGB(
+                                                      165, 0, 0, 0)),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      subtitle: Column(
+                                        children: [
+                                          const SizedBox(height: 4),
+                                          Container(
+                                            alignment: Alignment.centerLeft,
+                                            child: RichText(
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              text: TextSpan(
+                                                  text: recentMessageSender ==
+                                                          ''
+                                                      ? ''
+                                                      : '${recentMessageSender.split('_')[1]}: ',
+                                                  style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      color: Color.fromARGB(
+                                                          190, 0, 0, 0)),
+                                                  children: [
+                                                    TextSpan(
+                                                        text: recentMessage,
+                                                        style: const TextStyle(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.w300,
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    190,
+                                                                    0,
+                                                                    0,
+                                                                    0))),
+                                                  ]),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      onTap: () {
+                                        nextScreen(
+                                            context,
+                                            ChatPage(
+                                                groupId: groupId,
+                                                groupName: groupName,
+                                                username: username));
+                                      },
+                                    ),
+                                  ),
+                                  const Divider(
+                                    height: 0,
+                                    thickness: 0.5,
+                                    indent: 30,
+                                    endIndent: 30,
+                                  ),
+                                ],
+                              );
                             },
                           );
                         }
